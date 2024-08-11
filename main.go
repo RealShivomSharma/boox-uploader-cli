@@ -56,6 +56,7 @@ func booxSearch(cmd *cobra.Command, args []string) {
 	var searchType string
 	var source string
 
+	queryBoox()
 	searchTypePrompt := &survey.Select{
 		Message: "Select a category to search from",
 		Options: options,
