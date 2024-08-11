@@ -8,22 +8,34 @@ import (
 	"os"
 )
 
-// func followRedirects(url string) (string, error) {
-// 	var resp http
-// }
+type title_and_hash struct {
+	title string
+	hash  string
+}
 
-func LibGenDownload(md5_hash_list []string) error {
-	for _, hash := range md5_hash_list {
+func LibGenDownload(md5_hash_list []title_and_hash) error {
+	for _, title_and_hash := range md5_hash_list {
 
-		get_request_url := "https://libgen.li/get.php?" + hash
+		client := &http.Client{
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				return nil
+			},
+		}
 
-		resp, err := http.Get(get_request_url)
+		get_request_url := "https://cdn3.booksdl.org/get.php?" + title_and_hash.hash
+
+		resp, err := client.Get(get_request_url)
 
 		if err != nil {
-			log.Fatal("Failed to download book", err)
+			log.Fatal(err)
 		}
-		fmt.Println(resp.Header.Get("Location"))
-		filename := "test.pdf"
+		defer resp.Body.Close()
+
+		fmt.Println(resp)
+
+		fmt.Println(resp.Request.URL.String())
+
+		filename := title_and_hash.title + ".pdf"
 		file, err := os.Create(filename)
 		if err != nil {
 			return err
@@ -36,6 +48,4 @@ func LibGenDownload(md5_hash_list []string) error {
 		}
 	}
 	return nil
-
-	// https: //libgen.li/get.php?md5=311a42b9ba4d0e77d6bca615b1b333b1&key=BQ54PZGW0VWLOL02
 }

@@ -91,12 +91,12 @@ func booxSearch(cmd *cobra.Command, args []string) {
 
 		survey.AskOne(titleSelect, &titleSelection)
 
-		var hash_list_to_download []string
+		var hash_list_to_download []title_and_hash
 
 		for _, title := range titleSelection {
 			val, ok := queryResults[title]
 			if ok {
-				hash_list_to_download = append(hash_list_to_download, val.Hash)
+				hash_list_to_download = append(hash_list_to_download, title_and_hash{val.Title, val.Hash})
 			}
 
 		}
