@@ -19,6 +19,7 @@ type LibGenResult struct {
 	URL       string
 	Size      string
 	Extension string
+	Hash      string
 }
 
 func searchLibaryGenesis(source, query string) (map[string]LibGenResult, error) {
@@ -68,13 +69,13 @@ func searchLibaryGenesis(source, query string) (map[string]LibGenResult, error) 
 
 			isbn := s.Find("td:nth-child(5)").Text()
 
-			link, _ := s.Find("td:nth-child(3) a ").Attr("href")
+			fullURL := s.Find("#"+id).AttrOr("href", "")
 
-			fullURL := fmt.Sprintf("https://libgen.is%s", link)
+			md5Hash := strings.Split(fullURL, "?")[1]
 
 			title = strings.Replace(title, isbn, "", 1)
 
-			results = append(results, LibGenResult{ID: id, Number: i, Author: author, ISBN: isbn, URL: fullURL, Edition: edition, Title: title, Size: size, Extension: extension, Publisher: publisher})
+			results = append(results, LibGenResult{ID: id, Number: i, Author: author, ISBN: isbn, URL: fullURL, Edition: edition, Title: title, Size: size, Extension: extension, Publisher: publisher, Hash: md5Hash})
 
 			for _, result := range results {
 				mapped_results[result.Title] = result

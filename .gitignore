@@ -1,4 +1,4 @@
 
+*.pdf
 .env
 .DS_Store
-*.pdf
