@@ -1,13 +1,14 @@
-package tests
+package main
 
 import (
 	"fmt"
 	"log"
+	"testing"
 
 	"github.com/go-ping/ping"
 )
 
-func testBooxConnection() {
+func TestBooxConnnection(*testing.T) {
 	var config = create_config()
 	boox_ip := config.boox_ip
 	pinger, err := ping.NewPinger(boox_ip)
@@ -20,6 +21,7 @@ func testBooxConnection() {
 		panic(err)
 	}
 	stats := pinger.Statistics()
+
 	fmt.Println(stats)
 
 }

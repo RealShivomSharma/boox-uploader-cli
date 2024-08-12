@@ -53,6 +53,26 @@ func main() {
 func booxSearch(cmd *cobra.Command, args []string) {
 	options := []string{"Textbooks", "Manga"}
 
+	params := LibraryQueryParams{
+		Limit:           24,
+		Offset:          0,
+		SortBy:          "CreationTime",
+		Order:           "Desc",
+		LibraryUniqueID: "",
+	}
+	titles_to_print, err := getLibraryTitlesWithParams(params)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, title := range titles_to_print {
+
+		fmt.Println(title)
+	}
+
+	getBooxDetails()
+
 	var searchType string
 	var source string
 
@@ -88,16 +108,21 @@ func booxSearch(cmd *cobra.Command, args []string) {
 		}
 
 		var titleSelection []string
+		var hash_list_to_download []title_and_hash
 
 		survey.AskOne(titleSelect, &titleSelection)
 
 		for _, title := range titleSelection {
 			val, ok := queryResults[title]
 			if ok {
+				hash_list_to_download = append(hash_list_to_download, title_and_hash{val.Title, val.Hash})
+
 				fmt.Println(val.ID)
 			}
 
 		}
+
+		LibGenDownload(hash_list_to_download)
 
 		return
 	}

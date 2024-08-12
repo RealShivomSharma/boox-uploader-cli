@@ -14,12 +14,6 @@ type config_settings struct {
 func create_config() config_settings {
 	godotenv.Load(".env")
 	ip := os.Getenv("BOOX_TABLET_IP")
-	url := os.Getenv("BOOX_TABLET_ADDRESS")
-
-	var config_settings config_settings
-
-	config_settings.boox_ip = ip
-	config_settings.boox_url = url
-
-	return config_settings
+	url := os.Getenv("BOOX_TABLET_URL")
+	return config_settings{boox_url: url, boox_ip: ip}
 }
