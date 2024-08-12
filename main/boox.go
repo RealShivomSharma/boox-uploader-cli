@@ -1,12 +1,16 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"net/url"
+	"os"
+	"path/filepath"
 )
 
 type Routes struct {
@@ -18,6 +22,7 @@ type Routes struct {
 	Download string
 	Storage  string
 	Device   string
+	Upload   string
 }
 
 type DeviceDetails struct {
@@ -55,7 +60,6 @@ type LibraryQueryParams struct {
 
 func getBooxURL() string {
 	config := create_config()
-	fmt.Println(config)
 	return config.boox_url
 }
 
@@ -67,8 +71,9 @@ func getRoutes(url string) Routes {
 	musicRoute := url + "/#/pc/music"
 	audiosRoute := url + "/#/pc/audio"
 	downloadRoute := url + "/#/pc/download"
-	storageRoute := url + "/#/pc/storage"
+	storageRoute := url + "/api/storage"
 	deviceRoute := url + "/api/device"
+	uploadRoute := libraryRoute + "/upload"
 
 	return Routes{
 		Library:  libraryRoute,
@@ -79,6 +84,7 @@ func getRoutes(url string) Routes {
 		Download: downloadRoute,
 		Storage:  storageRoute,
 		Device:   deviceRoute,
+		Upload:   uploadRoute,
 	}
 
 }
@@ -177,12 +183,59 @@ func getLibraryTitlesWithParams(params LibraryQueryParams) ([]string, error) {
 
 }
 
-// import (
-// 	"fmt"
-// 	"log"
+func UploadFromFile(uploadURL string, filePath string) error {
+	filePath = "/Users/shivom/boox-uploader-cli/boox-uploader-cli/main/Testing Lifting Bodies at Edwards.pdf"
+	fileContent, err := os.ReadFile(filePath)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-// 	"github.com/go-ping/ping"
-// )
+	fileName := filepath.Base(filePath)
 
-// // func queryBoox() {
-// // }
+	body := &bytes.Buffer{}
+
+	writer := multipart.NewWriter(body)
+
+	part, err := writer.CreateFormFile("file", fileName)
+	if err != nil {
+		return fmt.Errorf("error creating form file %v", err)
+	}
+
+	_, err = io.Copy(part, bytes.NewReader(fileContent))
+	if err != nil {
+		return fmt.Errorf("failed to copy file content %v", err)
+	}
+
+	err = writer.Close()
+	if err != nil {
+		return fmt.Errorf("failed to close writer %v", err)
+	}
+
+	req, err := http.NewRequest("POST", uploadURL, body)
+	if err != nil {
+		return fmt.Errorf("error creating request: %v", err)
+	}
+
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+
+	client := &http.Client{}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("Failed to submit request %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("unexpected status: %v", resp.Status)
+	}
+
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("error reading response: %v", err)
+	}
+	fmt.Printf("Upload response: %s\n", string(responseBody))
+
+	return nil
+
+}

@@ -54,12 +54,17 @@ func booxSearch(cmd *cobra.Command, args []string) {
 	options := []string{"Textbooks", "Manga"}
 
 	params := LibraryQueryParams{
-		Limit:           24,
+		Limit:           1000,
 		Offset:          0,
 		SortBy:          "CreationTime",
 		Order:           "Desc",
 		LibraryUniqueID: "",
 	}
+
+	getBooxDetails()
+	upload_url := getRoutes(getBooxURL()).Upload
+
+	UploadFromFile(upload_url, "")
 	titles_to_print, err := getLibraryTitlesWithParams(params)
 
 	if err != nil {
@@ -70,8 +75,6 @@ func booxSearch(cmd *cobra.Command, args []string) {
 
 		fmt.Println(title)
 	}
-
-	getBooxDetails()
 
 	var searchType string
 	var source string
